@@ -18,6 +18,9 @@ typedef enum {
     tok_rbrace,
     tok_function,
     tok_let,
+
+    // Advance tokens
+    tok_eq,
 } Token_Types;
 
 typedef struct Location {

@@ -1,25 +1,58 @@
 #include "../../../core/core.h"
 #include "../lexer.h"
-#include <string.h>
-#include <stdio.h>
+
+typedef struct Token_Expect {
+    Token_Types tag;
+    union {
+        char *literal;
+        i32 number;
+    } data;
+} Token_Expect;
 
 void test_next_token() {
     Arena a;
     c_arena_init(&a, GB(1));
 
-    Token expected_results[9] = {
-      (Token){.tag = tok_assign, .loc = {.start = 0, .end = 1}},
-      (Token){.tag = tok_plus, .loc = {.start = 1, .end = 2}},
-      (Token){.tag = tok_lparen, .loc = {.start = 2, .end = 3}},
-      (Token){.tag = tok_rparen, .loc = {.start = 3, .end = 4}},
-      (Token){.tag = tok_lbrace, .loc = {.start = 4, .end = 5}},
-      (Token){.tag = tok_rbrace, .loc = {.start = 5, .end = 6}},
-      (Token){.tag = tok_comma, .loc = {.start = 6, .end = 7}},
-      (Token){.tag = tok_semicolon, .loc = {.start = 7, .end = 8}},
-      (Token){.tag = tok_eof, .loc = {.start = 8, .end = 9}},
+    Token_Expect expected_results[] = {
+      (Token_Expect){tok_let},
+      (Token_Expect){tok_ident, "five"},
+      (Token_Expect){tok_assign},
+      (Token_Expect){tok_int, .data = {.number = 5}},
+      (Token_Expect){tok_semicolon},
+      (Token_Expect){tok_let},
+      (Token_Expect){tok_ident, "ten"},
+      (Token_Expect){tok_assign},
+      (Token_Expect){tok_int, .data = {.number = 10}},
+      (Token_Expect){tok_semicolon},
+      (Token_Expect){tok_let},
+      (Token_Expect){tok_ident, "add"},
+      (Token_Expect){tok_assign},
+      (Token_Expect){tok_function},
+      (Token_Expect){tok_lparen},
+      (Token_Expect){tok_ident, "x"},
+      (Token_Expect){tok_comma},
+      (Token_Expect){tok_ident, "y"},
+      (Token_Expect){tok_rparen},
+      (Token_Expect){tok_lbrace},
+      (Token_Expect){tok_ident, "x"},
+      (Token_Expect){tok_plus},
+      (Token_Expect){tok_ident, "y"},
+      (Token_Expect){tok_semicolon},
+      (Token_Expect){tok_rbrace},
+      (Token_Expect){tok_semicolon},
+      (Token_Expect){tok_let},
+      (Token_Expect){tok_ident, "result"},
+      (Token_Expect){tok_assign},
+      (Token_Expect){tok_ident, "add"},
+      (Token_Expect){tok_lparen},
+      (Token_Expect){tok_ident, "five"},
+      (Token_Expect){tok_comma},
+      (Token_Expect){tok_ident, "ten"},
+      (Token_Expect){tok_rparen},
+      (Token_Expect){tok_semicolon},
+      (Token_Expect){tok_eof},
     };
     Tokenizer t = tokenizer_create(&a, "src/tests/test_lexer.txt");
-    printf("Input String: %s\nLength of string: %llu\n", t.input.data, t.input.len);
 
     bool quit = false;
     int counter = 0;
