@@ -9,6 +9,37 @@ static bool is_letter(u8 ch);
 static Location read_number(Tokenizer *t);
 static u8 peek_char(Tokenizer *t);
 
+typedef enum {
+    ident_function,
+    ident_let,
+} Ident_Types;
+
+String8 ident_lookup_table[] = {
+    (String8){.data = (u8*)"let", 3},
+    (String8){.data = (u8*)"fn", 2},
+};
+
+Token_Types ident_lookup(Tokenizer *t, Location l) {
+    u8 current_char = t->input.data[l.start];
+    switch(current_char) {
+        case 'f': {
+            if (t->input.data[l.end] == 'n') {
+                return tok_function;
+            }
+        } break;
+        case 'l': {
+            bool is_let = false;
+            String8 let = ident_lookup_table[ident_let];
+            for (int i = 0; i < l.end - l.start; i++) {
+                is_let = let.data[i] == t->input.data[l.start + i];
+            }
+            if (is_let) return tok_let;
+        }
+    }
+
+    return tok_illegal;
+}
+
 Tokenizer tokenizer_create(Arena *a, const char *file_path) {
     Tokenizer *t = c_arena_alloc(a, sizeof(Tokenizer));
 
@@ -75,14 +106,38 @@ Token next_token(Arena *a, Tokenizer *t) {
             tok->tag = tok_rbrace;
             tok->loc = (Location){.start = t->read_pos};
         } break;
+        case '!': {
+            tok->tag = tok_bang;
+            tok->loc = (Location){.start = t->read_pos};
+        } break;
+        case '-': {
+            tok->tag = tok_minus;
+            tok->loc = (Location){.start = t->read_pos};
+        } break;
+        case '*': {
+            tok->tag = tok_asterisk;
+            tok->loc = (Location){.start = t->read_pos};
+        } break;
+        case '/': {
+            tok->tag = tok_slash;
+            tok->loc = (Location){.start = t->read_pos};
+        } break;
+        case '<': {
+            tok->tag = tok_lt;
+            tok->loc = (Location){.start = t->read_pos};
+        } break;
+        case '>': {
+            tok->tag = tok_gt;
+            tok->loc = (Location){.start = t->read_pos};
+        } break;
         case 0: {
             tok->tag = tok_eof;
             tok->loc = (Location){.start = t->read_pos};
         } break;
         default: {
             if (is_letter(current_char)) {
-                tok->tag = tok_ident;
                 tok->loc = read_idenitifer(t);
+                tok->tag = ident_lookup(t, tok->loc);
             } else if (is_digit(current_char)){
 
             } else {

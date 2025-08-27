@@ -21,6 +21,12 @@ typedef enum {
 
     // Advance tokens
     tok_eq,
+    tok_bang,
+    tok_minus,
+    tok_asterisk,
+    tok_slash,
+    tok_lt,
+    tok_gt,
 } Token_Types;
 
 typedef struct Location {
@@ -48,3 +54,4 @@ Tokenizer tokenizer_create(Arena *a, const char *file_path);
 Token next_token(Arena *a, Tokenizer *t);
 
 ArrayToken tokenize(Tokenizer *l);
+Token_Types ident_lookup(Tokenizer *t, Location l);

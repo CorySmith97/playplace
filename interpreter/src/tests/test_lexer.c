@@ -9,6 +9,16 @@ typedef struct Token_Expect {
     } data;
 } Token_Expect;
 
+void test_ident_lookup() {
+    Arena a;
+    c_arena_init(&a, GB(1));
+
+    Tokenizer t = tokenizer_create(&a, "src/tests/test_lexer.txt");
+
+    Token tok = next_token(&a, &t);
+    assert(tok.tag == tok_let, "Let token test");
+}
+
 void test_next_token() {
     Arena a;
     c_arena_init(&a, GB(1));
@@ -68,5 +78,6 @@ void test_next_token() {
 }
 
 int main() {
+    test_ident_lookup();
     test_next_token();
 }

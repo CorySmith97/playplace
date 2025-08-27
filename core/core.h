@@ -34,6 +34,7 @@ typedef size_t usize;
     }while (0)
 
 // ARENA
+// @todo:cs This needs to have alignment stuff accounted for. I keep ignoring it because I'm a lazy bear.
 typedef struct Arena {
     void* data;
     u64 size;
