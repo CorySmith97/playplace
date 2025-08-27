@@ -71,6 +71,8 @@ Token next_token(Arena *a, Tokenizer *t) {
     return *tok;
 }
 
+static void eat_whitespace(Tokenizer *t) {
+}
 
 static u8 peek_char(Tokenizer *t) {
     if (t->read_pos + 1 < t->input.len) {
