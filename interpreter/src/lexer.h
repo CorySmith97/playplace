@@ -4,9 +4,9 @@
 // Based off monkey lang. The toy language of Thorston Ball. Read the book.
 
 typedef enum {
-    tok_eof,
-    tok_illegal,
-    tok_assign,
+    tok_eof = 0,
+    tok_illegal = 1,
+    tok_assign = 2,
     tok_plus,
     tok_ident,
     tok_int,

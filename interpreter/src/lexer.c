@@ -10,34 +10,27 @@ static Location read_number(Tokenizer *t);
 static u8 peek_char(Tokenizer *t);
 
 typedef enum {
-    ident_function,
+    ident_function = 0,
     ident_let,
 } Ident_Types;
 
 String8 ident_lookup_table[] = {
-    (String8){.data = (u8*)"let", 3},
     (String8){.data = (u8*)"fn", 2},
+    (String8){.data = (u8*)"let", 3},
 };
 
-Token_Types ident_lookup(Tokenizer *t, Location l) {
-    u8 current_char = t->input.data[l.start];
-    switch(current_char) {
-        case 'f': {
-            if (t->input.data[l.end] == 'n') {
-                return tok_function;
-            }
-        } break;
-        case 'l': {
-            bool is_let = false;
-            String8 let = ident_lookup_table[ident_let];
-            for (int i = 0; i < l.end - l.start; i++) {
-                is_let = let.data[i] == t->input.data[l.start + i];
-            }
-            if (is_let) return tok_let;
-        }
-    }
+static inline bool s8_eq_range(String8 s, u64 start, u64 end, const char *lit) {
+    u64 n = end - start;
+    u64 m = 0; while (lit[m]) ++m;
+    if (n != m) return false;
+    for (u64 i = 0; i < n; ++i) if (s.data[start+i] != (u8)lit[i]) return false;
+    return true;
+}
 
-    return tok_illegal;
+Token_Types ident_lookup(Tokenizer *t, Location l) {
+    if (s8_eq_range(t->input, l.start, l.end, "fn"))  return tok_function;
+    if (s8_eq_range(t->input, l.start, l.end, "let")) return tok_let;
+    return tok_ident;
 }
 
 Tokenizer tokenizer_create(Arena *a, const char *file_path) {
@@ -69,14 +62,15 @@ Token next_token(Arena *a, Tokenizer *t) {
     u8 current_char = t->input.data[t->read_pos];
     switch (current_char) {
         case '=': {
-            if (peek_char(t) == '=') {
-                tok->tag = tok_assign;
-                tok->loc = (Location){t->read_pos, t->read_pos + 1};
-                read_char(t);
-            } else {
+            //if (peek_char(t) == '=') {
+            //    LOG(debug, "This should be hitting once");
+            //    tok->tag = tok_assign;
+            //    tok->loc = (Location){t->read_pos, t->read_pos + 1};
+            //    read_char(t);
+            //} else {
                 tok->tag = tok_assign;
                 tok->loc = (Location){.start = t->read_pos};
-            }
+            //}
         } break;
         case '+': {
             tok->tag = tok_plus;
@@ -137,9 +131,12 @@ Token next_token(Arena *a, Tokenizer *t) {
         default: {
             if (is_letter(current_char)) {
                 tok->loc = read_idenitifer(t);
+                LOG(debug, "Ident: loc, %llu %llu", tok->loc.start, tok->loc.end);
                 tok->tag = ident_lookup(t, tok->loc);
             } else if (is_digit(current_char)){
-
+                LOG(debug, "Trying to read a digit");
+                tok->loc = read_number(t);
+                tok->tag = tok_int;
             } else {
                 tok->tag = tok_illegal;
             }
@@ -152,8 +149,9 @@ Token next_token(Arena *a, Tokenizer *t) {
 
 static void eat_whitespace(Tokenizer *t) {
     u8 current_char = t->input.data[t->read_pos];
-    while (current_char == '\n' || current_char == ' '|| current_char == '\r'|| current_char == '\t') {
+    while (current_char == '\n' || current_char == ' ' || current_char == '\r'|| current_char == '\t') {
         read_char(t);
+        current_char = t->input.data[t->read_pos];
     }
 }
 
@@ -166,7 +164,7 @@ static bool is_digit(u8 ch) {
 }
 
 static bool is_letter(u8 ch) {
-    if ('A' <= ch && ch <= 'Z' || 'a' <= ch && ch <= 'z') {
+    if (ch == '_' || ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z')) {
         return true;
     }
 
@@ -186,6 +184,8 @@ static Location read_number(Tokenizer *t) {
     u8 current_char = t->input.data[t->read_pos];
     while (is_digit(current_char)) {
         read_char(t);
+        LOG(debug, "reading %c", current_char);
+        current_char = t->input.data[t->read_pos];
     }
     return (Location){start, t->read_pos};
 }
@@ -195,6 +195,8 @@ static Location read_idenitifer(Tokenizer *t) {
     u8 current_char = t->input.data[t->read_pos];
     while (is_letter(current_char)) {
         read_char(t);
+        LOG(debug, "reading %c", current_char);
+        current_char = t->input.data[t->read_pos];
     }
     return (Location){start, t->read_pos};
 }

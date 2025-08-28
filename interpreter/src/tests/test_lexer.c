@@ -16,7 +16,12 @@ void test_ident_lookup() {
     Tokenizer t = tokenizer_create(&a, "src/tests/test_lexer.txt");
 
     Token tok = next_token(&a, &t);
+    LOG(info, "tok: %d", tok.tag);
     assert(tok.tag == tok_let, "Let token test");
+    tok = next_token(&a, &t);
+    assert(tok.tag == tok_ident, "Ident token test");
+    tok = next_token(&a, &t);
+    assert(tok.tag == tok_assign, "Ident token test");
 }
 
 void test_next_token() {
@@ -68,7 +73,7 @@ void test_next_token() {
     int counter = 0;
     while (!quit) {
         Token tok = next_token(&a, &t);
-        //LOG(info, "Interation: %d, Read pos %d\n\tToken: %d. Expected: %d. Char: %c", counter, t.read_pos, tok.tag, expected_results[counter].tag, t.input.data[t.read_pos]);
+        LOG(info, "Interation: %d, \n\tToken: %c..%c\n\tToken: %d Expected: %d.", counter, t.input.data[tok.loc.start], t.input.data[tok.loc.end], tok.tag, expected_results[counter].tag);
         assert(tok.tag == expected_results[counter].tag, "Token Compare");
         if (tok.tag == tok_eof) {
             quit = true;
